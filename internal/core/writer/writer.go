@@ -71,6 +71,7 @@ type SignalFxWriter struct {
 	// Keeps track of what service names have been seen in trace spans that are
 	// emitted by the agent
 	serviceTracker *tracetracker.ActiveServiceTracker
+	sourceTracker  *tracetracker.SourceTracker
 
 	// Datapoints sent in the last minute
 	datapointsLastMinute int64

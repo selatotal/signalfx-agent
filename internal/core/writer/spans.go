@@ -20,6 +20,7 @@ func (sw *SignalFxWriter) listenForTraceSpans() {
 	// The only reason this is on the struct and not a local var is so we can
 	// easily get diagnostic metrics from it
 	sw.serviceTracker = sw.startGeneratingHostCorrelationMetrics()
+	sw.sourceTracker = tracetracker.NewSourceTracker(sw.dimensionChan)
 	shedRequests := make(chan struct{})
 	shedCompleted := make(chan struct{})
 
@@ -151,6 +152,8 @@ func (sw *SignalFxWriter) preprocessSpan(span *trace.Span) {
 		// Get rid of the tag so it doesn't pass through to the backend
 		delete(span.Tags, dpmeta.NotHostSpecificMeta)
 	}
+
+	sw.sourceTracker.AddSourceTagsToSpan(span)
 
 	// adding smart agent version as a tag
 	span.Tags["signalfx.smartagent.version"] = constants.Version
