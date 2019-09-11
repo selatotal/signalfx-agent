@@ -11,6 +11,16 @@ func TestDoesServiceMatchRule(t *testing.T) {
 		endpoint := NewEndpointCore("abcd", "test", "test", nil)
 		assert.False(t, DoesServiceMatchRule(endpoint, "== ++ abc 1jj +", true))
 	})
+
+	t.Run("Handles nested structs in discovery rule", func(t *testing.T) {
+		endpoint := NewEndpointCore("abcd", "test", "test", nil)
+		endpoint.AddExtraField("a", struct {
+			B map[string]bool
+		}{
+			B: map[string]bool{"c": true},
+		})
+		assert.True(t, DoesServiceMatchRule(endpoint, `Get(a.B, "c")`, true))
+	})
 }
 
 func TestMapFunctions(t *testing.T) {

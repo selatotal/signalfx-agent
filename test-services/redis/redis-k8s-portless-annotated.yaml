@@ -1,0 +1,28 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-deployment-portless-annotated
+  labels:
+    app: redis-portless-annotated
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-portless-annotated
+  template:
+    metadata:
+      annotations:
+        agent.signalfx.com/config.redis-container.port: "6379"
+      labels:
+        app: redis-portless-annotated
+    spec:
+      containers:
+        - name: redis-container
+          image: redis:latest
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5

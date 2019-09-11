@@ -91,6 +91,15 @@ func TestNoPods(t *testing.T) {
 		}
 	}
 
+	t.Run("One pod without container port", func(t *testing.T) {
+		RegisterTestingT(t)
+		setup("testdata/pods-without-ports.json")
+		Eventually(func() int { return len(endpoints) }).Should(Equal(1))
+		re := endpoints[services.ID("redis-3165242388-n1vc7-2fafcdf-redis")].(*services.ContainerEndpoint)
+		Expect(re.Port).To(Equal(uint16(0)))
+		Expect(re.Host).To(Equal("10.2.83.18"))
+	})
+
 	t.Run("No pods at all", func(t *testing.T) {
 		RegisterTestingT(t)
 		setup("testdata/pods-no-pods.json")
