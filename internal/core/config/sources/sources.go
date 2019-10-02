@@ -5,6 +5,7 @@
 package sources
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"time"
@@ -121,24 +122,24 @@ func parseSourceConfig(config []byte) (SourceConfig, error) {
 // ReadConfig reads in the main agent config file and optionally watches for
 // changes on it.  It will be returned immediately, along with a channel that
 // will be sent any updated config content if watching is enabled.
-func ReadConfig(configPath string, stop <-chan struct{}) ([]byte, <-chan []byte, error) {
+func StartReadingConfig(ctx context.Context, configPath string, changes chan string) ([]byte, error) {
 	// Fetch the config file with a dummy file source since we don't know what
 	// poll rate to configure on it yet.
 	contentMap, version, err := file.New(1 * time.Second).Get(configPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if len(contentMap) > 1 {
-		return nil, nil, fmt.Errorf("path %s resulted in multiple files", configPath)
+		return nil, fmt.Errorf("path %s resulted in multiple files", configPath)
 	}
 	if len(contentMap) == 0 {
-		return nil, nil, fmt.Errorf("config file %s could not be found", configPath)
+		return nil, fmt.Errorf("config file %s could not be found", configPath)
 	}
 
 	configContent := contentMap[configPath]
 	sourceConfig, err := parseSourceConfig(configContent)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Now that we know the poll rate for files, we can make a new file source
@@ -174,10 +175,10 @@ func ReadConfig(configPath string, stop <-chan struct{}) ([]byte, <-chan []byte,
 				changes <- contentMap[configPath]
 			}
 		}()
-		return configContent, changes, nil
+		return configContent, nil
 	}
 
-	return configContent, nil, nil
+	return configContent, nil
 }
 
 // DynamicValueProvider handles setting up and providing dynamic values from

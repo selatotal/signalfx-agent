@@ -23,14 +23,16 @@ import (
 // be closed.  Otherwise, the returned channel will remain open and will be
 // sent any config updates.
 func LoadConfig(ctx context.Context, configPath string) (<-chan *Config, error) {
-	configYAML, configFileChanges, err := sources.ReadConfig(configPath, ctx.Done())
+	dynamicProvider := sources.DynamicValueProvider{}
+
+	dynamicValueCtx, cancelDynamic := context.WithCancel(ctx)
+
+	configFileChanges := make(chan string)
+	configYAML, err := sources.ReadConfig(dynamicValueCtx, configPath, configFileChanges)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Could not read config file "+configPath)
 	}
 
-	dynamicProvider := sources.DynamicValueProvider{}
-
-	dynamicValueCtx, cancelDynamic := context.WithCancel(ctx)
 	finalYAML, dynamicChanges, err := dynamicProvider.ReadDynamicValues(configYAML, dynamicValueCtx.Done())
 	if err != nil {
 		cancelDynamic()
@@ -60,6 +62,10 @@ func LoadConfig(ctx context.Context, configPath string) (<-chan *Config, error) 
 					cancelDynamic()
 
 					dynamicValueCtx, cancelDynamic = context.WithCancel(ctx)
+					configYAML, configFileChanges, err := sources.ReadConfig(configPath, dynamicValueCtx.Done())
+					if err != nil {
+						return nil, errors.WithMessage(err, "Could not read config file "+configPath)
+					}
 
 					finalYAML, dynamicChanges, err = dynamicProvider.ReadDynamicValues(configYAML, dynamicValueCtx.Done())
 					if err != nil {

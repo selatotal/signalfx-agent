@@ -34,8 +34,15 @@ func (c *configSourceCacher) Get(path string, optional bool) (map[string][]byte,
 	}
 	v, version, err := c.source.Get(path)
 	if err != nil {
-		if _, ok := err.(types.ErrNotFound); !ok || !optional {
+		if !optional {
 			return nil, err
+		}
+
+		if _, ok := err.(types.ErrNotFound); !ok {
+			log.WithFields(log.Fields{
+				"error": err,
+				"path":  path,
+			}).Error("Failed to get remote config source")
 		}
 	}
 
@@ -66,7 +73,7 @@ func (c *configSourceCacher) watch(path string, version uint64) {
 				"source": c.source.Name(),
 				"error":  err,
 			}).Error("Could not watch path for change")
-			time.Sleep(3 * time.Second)
+			time.Sleep(10 * time.Second)
 			continue
 		}
 
@@ -78,7 +85,7 @@ func (c *configSourceCacher) watch(path string, version uint64) {
 				"error":  err,
 			}).Error("Could not get path after change")
 			version = 0
-			time.Sleep(3 * time.Second)
+			time.Sleep(10 * time.Second)
 			continue
 		}
 
