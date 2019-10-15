@@ -11,7 +11,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func datapointsForPod(pod *v1.Pod) []*datapoint.Datapoint {
+func datapointsForPod(pod *v1.Pod) ([]*datapoint.Datapoint, []*atypes.DimProperties) {
 	dimensions := map[string]string{
 		"metric_source": "kubernetes",
 		// Try and be consistent with other plugin dimensions, despite
@@ -32,13 +32,24 @@ func datapointsForPod(pod *v1.Pod) []*datapoint.Datapoint {
 	}
 
 	containersInPodByName := make(map[string]map[string]string)
+	dimPropListForContainers := make([]*atypes.DimProperties, 0)
 
 	for _, cs := range pod.Status.ContainerStatuses {
+
+		if cs.ContainerID == "" {
+			continue
+		}
+
 		contDims := getAllContainerDimensions(cs.ContainerID, cs.Name, cs.Image, dimensions)
 
 		containersInPodByName[cs.Name] = contDims
 
 		dps = append(dps, datapointsForContainerStatus(cs, contDims)...)
+		dimPropsForContainer := dimPropsForContainer(cs)
+
+		if dimPropsForContainer != nil {
+			dimPropListForContainers = append(dimPropListForContainers, dimPropsForContainer)
+		}
 	}
 
 	for _, c := range pod.Spec.Containers {
@@ -47,7 +58,7 @@ func datapointsForPod(pod *v1.Pod) []*datapoint.Datapoint {
 		dps = append(dps, datapointsForContainerSpec(c, contDims)...)
 	}
 
-	return dps
+	return dps, dimPropListForContainers
 }
 
 func dimPropsForPod(cachedPod *k8sutil.CachedPod, sc *k8sutil.ServiceCache,

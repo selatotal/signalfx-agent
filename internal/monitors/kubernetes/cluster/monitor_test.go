@@ -128,6 +128,7 @@ var _ = Describe("Kubernetes plugin", func() {
 					Phase: v1.PodRunning,
 					ContainerStatuses: []v1.ContainerStatus{
 						{
+							ContainerID:  "container_id",
 							Ready:        true,
 							Name:         "container1",
 							RestartCount: 5,
@@ -171,6 +172,7 @@ var _ = Describe("Kubernetes plugin", func() {
 				Phase: v1.PodFailed,
 				ContainerStatuses: []v1.ContainerStatus{
 					{
+						ContainerID:  "container_id",
 						Name:         "container2",
 						RestartCount: 0,
 					},
@@ -196,6 +198,7 @@ var _ = Describe("Kubernetes plugin", func() {
 				Phase: v1.PodFailed,
 				ContainerStatuses: []v1.ContainerStatus{
 					{
+						ContainerID:  "container_id",
 						Name:         "container2",
 						RestartCount: 2,
 					},
@@ -221,6 +224,7 @@ var _ = Describe("Kubernetes plugin", func() {
 				Phase: v1.PodFailed,
 				ContainerStatuses: []v1.ContainerStatus{
 					{
+						ContainerID:  "container_id",
 						Name:         "container2",
 						RestartCount: 2,
 					},

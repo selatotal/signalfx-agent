@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/signalfx/golib/datapoint"
+	atypes "github.com/signalfx/signalfx-agent/internal/monitors/types"
 	"github.com/signalfx/signalfx-agent/internal/utils"
 	v1 "k8s.io/api/core/v1"
 )
@@ -79,6 +80,37 @@ func datapointsForContainerSpec(c v1.Container, contDims map[string]string) []*d
 	}
 
 	return dps
+}
+
+func dimPropsForContainer(cs v1.ContainerStatus) *atypes.DimProperties {
+	containerProps := make(map[string]string)
+
+	if cs.State.Running != nil {
+		containerProps["container_status"] = "running"
+		containerProps["container_status_reason"] = ""
+	}
+
+	if cs.State.Terminated != nil {
+		containerProps["container_status"] = "terminated"
+		containerProps["container_status_reason"] = cs.State.Terminated.Reason
+	}
+
+	if cs.State.Waiting != nil {
+		containerProps["container_status"] = "waiting"
+		containerProps["container_status_reason"] = cs.State.Waiting.Reason
+	}
+
+	if len(containerProps) > 0 {
+		return &atypes.DimProperties{
+			Dimension: atypes.Dimension{
+				Name:  "container_id",
+				Value: stripContainerIDPrefix(cs.ContainerID),
+			},
+			Properties:        containerProps,
+			MergeIntoExisting: true,
+		}
+	}
+	return nil
 }
 
 func getAllContainerDimensions(id string, name string, image string, dims map[string]string) map[string]string {
