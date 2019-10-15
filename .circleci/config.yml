@@ -25,7 +25,7 @@ executors:
 
   helm:
     docker:
-     - image: alpine/helm:2.13.0
+     - image: alpine/helm:2.15.0-rc.1
 
 
 commands:
@@ -150,7 +150,7 @@ commands:
     parameters:
       version:
         type: string
-        default: v2.13.0
+        default: v2.15.0-rc.1
     steps:
       - restore_cache:
           key: "v3-helm-binary-<< parameters.version >>"
@@ -158,7 +158,7 @@ commands:
           name: Install Helm
           command: |
             [[ -f /home/circleci/bin/helm ]] && exit 0
-            wget -O /tmp/helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-<< parameters.version >>-linux-amd64.tar.gz
+            wget -O /tmp/helm.tar.gz https://get.helm.sh/helm-<< parameters.version >>-linux-amd64.tar.gz
             tar -zxvf /tmp/helm.tar.gz -C /tmp
             mv /tmp/linux-amd64/helm /home/circleci/bin/helm
             chmod a+x /home/circleci/bin/helm

@@ -54,7 +54,7 @@ RUN apt-get update && \
 VOLUME /var/lib/docker
 EXPOSE 2375
 
-ARG HELM_VERSION=v2.13.0
+ARG HELM_VERSION=v2.15.0-rc.1
 
 # Install helm
 WORKDIR /tmp
