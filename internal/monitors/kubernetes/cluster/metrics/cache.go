@@ -218,9 +218,17 @@ func (dc *DatapointCache) handleAddPod(pod *v1.Pod) ([]*datapoint.Datapoint,
 		dc.podCache.AddPod(pod)
 	}
 	cachedPod := dc.podCache.GetCachedPod(pod.UID)
-	dps, containerDimProps := datapointsForPod(pod)
+	dps := datapointsForPod(pod)
 
-	dc.addDimPropsListToCache(containerDimProps)
+	dimPropsForContainers := make([]*atypes.DimProperties, 0)
+	for _, cs := range pod.Status.ContainerStatuses {
+		dimPropsForContainer := dimPropsForContainer(cs)
+		if dimPropsForContainer != nil {
+			dimPropsForContainers = append(dimPropsForContainers, dimPropsForContainer)
+		}
+	}
+
+	dc.addDimPropsListToCache(dimPropsForContainers)
 
 	if cachedPod != nil {
 		dimProps := dimPropsForPod(cachedPod, dc.serviceCache, dc.replicaSetCache, dc.jobCache)
