@@ -117,6 +117,7 @@ These are all of the monitors included in the agent, along with their possible c
 - [kubelet-stats](./monitors/kubelet-stats.md)
 - [kubernetes-apiserver](./monitors/kubernetes-apiserver.md)
 - [kubernetes-cluster](./monitors/kubernetes-cluster.md)
+- [kubernetes-controller-manager](./monitors/kubernetes-controller-manager.md)
 - [kubernetes-events](./monitors/kubernetes-events.md)
 - [kubernetes-scheduler](./monitors/kubernetes-scheduler.md)
 - [kubernetes-volumes](./monitors/kubernetes-volumes.md)
